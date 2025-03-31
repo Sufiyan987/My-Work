@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Words of Wonders</title>
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(to right, #ff9a9e, #fad0c4); 
+            color: #333; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+        .game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1, #level-indicator, #message { 
+            color: #00796b; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); 
+            text-align: center;
+        }
+        .grid { 
+            display: flex; 
+            flex-wrap: wrap;
+            justify-content: center; 
+            gap: 10px; 
+            margin-top: 20px; 
+        }
+        .letter { 
+            width: 70px; 
+            height: 70px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 3px solid #00796b; 
+            border-radius: 10px;
+            cursor: pointer; 
+            font-size: 24px; 
+            font-weight: bold;
+            background-color: white; 
+            color: #333;
+            transition: 0.3s; 
+        }
+        .letter:hover {
+            background-color: #80cbc4;
+            color: white;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .check-btn {
+            background-color: #4CAF50;
+        }
+        .reset-btn {
+            background-color: #FF0000;
+        }
+        .settings-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .settings-container label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .settings-container input {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <label for="volume">Sound Volume</label>
+        <input type="range" id="volume" min="0" max="100" value="50" onchange="adjustVolume(this.value)">
+        <br>
+        <label for="music">Background Music</label>
+        <input type="range" id="volume" min="0" max="100" value="50" onchange="adjustVolume(this.value)">
+    </div>
+    
+    <div class="game-container">
+        <h1>Words of Wonders</h1>
+        <div id="level-indicator">Level: 1</div>
+        <div class="grid" id="grid"></div>
+        <div id="message"></div>
+        <div class="button-container">
+            <button class="check-btn" onclick="checkWord();">Check Word</button>
+            <button class="reset-btn" onclick="resetGame();">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const words = ["ELEPHANT", "COMPUTER", "TELEPHONE", "BICYCLE", "NOTEBOOK", "BACKPACK", "HOSPITAL", "TEACHERS", "BUILDING", "TOURNAMENT", "EXERCISE", "MICROSCOPE", "TELEVISION", "LANDSCAPE", "ADVENTURE", "SCULPTURE", "LITERATURE", "CARPENTER", "ASTRONOMY", "DEMOCRACY"];
+        let currentLevel = 1;
+        let gameActive = true;
+        let volumeLevel = 50;
+        let musicPlaying = true;
+
+        function shuffleWord(word) {
+            return word.split('').sort(() => Math.random() - 0.5).join('');
+        }
+
+        function loadLevel() {
+            document.getElementById("grid").innerHTML = "";
+            document.getElementById("message").innerHTML = "";
+            document.getElementById("level-indicator").textContent = "Level: " + currentLevel;
+            let shuffledWord = shuffleWord(words[(currentLevel - 1) % words.length]);
+            shuffledWord.split('').forEach(letter => {
+                let div = document.createElement("div");
+                div.classList.add("letter");
+                div.textContent = letter;
+                div.onclick = () => swapLetter(div);
+                document.getElementById("grid").appendChild(div);
+            });
+        }
+
+        function swapLetter(clickedDiv) {
+            if (!gameActive) return;
+            let selected = document.querySelector(".selected");
+            if (!selected) {
+                clickedDiv.classList.add("selected");
+            } else {
+                let temp = clickedDiv.textContent;
+                clickedDiv.textContent = selected.textContent;
+                selected.textContent = temp;
+                selected.classList.remove("selected");
+            }
+        }
+
+        function checkWord() {
+            if (!gameActive) return;
+            let formedWord = Array.from(document.querySelectorAll(".letter"))
+                .map(el => el.textContent)
+                .join('');
+            if (formedWord === words[(currentLevel - 1) % words.length]) {
+                if (currentLevel < 100) {
+                    currentLevel++;
+                    loadLevel();
+                } else {
+                    document.getElementById("message").innerHTML = "<span style='color: green;'>Congratulations! You've completed all levels!</span>";
+                    gameActive = false;
+                }
+            } else {
+                document.getElementById("message").innerHTML = "<span style='color: red;'>Incorrect! Try again.</span>";
+            }
+        }
+
+        function resetGame() {
+            currentLevel = 1;
+            gameActive = true;
+            loadLevel();
+        }
+
+        function adjustVolume(value) {
+            volumeLevel = value;
+            console.log("Volume set to: " + volumeLevel);
+        }
+
+        function toggleMusic() {
+            musicPlaying = !musicPlaying;
+            console.log(musicPlaying ? "Music On" : "Music Off");
+        }
+
+        loadLevel();
+    </script>
+</body>
+</html>
